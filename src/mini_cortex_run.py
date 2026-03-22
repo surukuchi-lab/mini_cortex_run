@@ -25,7 +25,7 @@ with open(args["init"]) as f:
 # Set env variables
 EVENT_ENABLE = env_args["EVENT_ENABLE"]
 MONITOR_ENABLE = env_args["MONITOR_ENABLE"]
-TIME_STR = time.strftime("%Y-%m-%d_%H:%M:%S")
+TIME_STR = time.strftime("%Y-%m-%d_%H:%M")
 
 print(f"Date_Time: {TIME_STR}\n")
 print(f"Loaded {args['init'].split('/')[-1]}")
@@ -47,7 +47,7 @@ print("Setup sent to FPGA...")
 if EVENT_ENABLE == 1:
     os.makedirs("data/event/", exist_ok=True)
     event_data_file = open(f"data/event/{TIME_STR}.csv", "w")
-    event_data_file.write(f"Time,Data\n")
+    event_data_file.write("Time,Data\n")
 
     print("Starting event mode!\n")
     while True:
@@ -71,7 +71,7 @@ if EVENT_ENABLE == 1:
 if MONITOR_ENABLE == 1:
     os.makedirs("data/monitor/", exist_ok=True)
     monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
-    monitor_data_file.write(f"Time,Data\n")
+    monitor_data_file.write("Time,Data\n")
 
     print("Starting monitor mode!\n")
     while True:

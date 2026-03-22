@@ -50,7 +50,12 @@ def event_handler() -> int:
 
     if(header == 0xa5a5 and event_tailer == 0xd5d5):
         eve_word = ((rx_array[5] & 0x000000ff) << 24) | ((rx_array[4] & 0x000000ff) << 16) | ((rx_array[3] & 0x000000ff) << 8) | rx_array[2]
-        return eve_word
+        
+        if eve_word == int: 
+            return eve_word
+        else: 
+            print(f"\033[91mError while processing bit string. Expected int type, got {type(eve_word)}\033[00m")
+            return 0
     
 
 def monitor_handler():
