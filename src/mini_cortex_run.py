@@ -1,4 +1,5 @@
 from lib import FPGA_controler
+from lib.LED_cube import send_LED_cube_animate
 import json
 import argparse
 import time
@@ -55,13 +56,7 @@ if EVENT_ENABLE == 1:
         event_time = time.strftime("%y-%m-%d_%H:%M:%S")
         event_data_file.write(f"{event_time},{event_data:032b}\n")
 
-        # send_LED_cube_animate(
-        #   f"{eve_word:032b}", 
-        #   box_info=box_info, 
-        #   mapping=mapping, 
-        #   bit_low=bit_low, 
-        #   bit_high=bit_high
-        # )
+        send_LED_cube_animate(f"{event_data:032b}")
 
         print ("Timestamp and Event",event_time.split("_")[-1])   
         print(f"{event_data:032b}")
@@ -78,3 +73,13 @@ if MONITOR_ENABLE == 1:
         monitor_data = FPGA_controler.monitor_handler()
         monitor_time = time.strftime("%y-%m-%d_%H:%M:%S")
         monitor_data_file.write(f"{monitor_time},{str(monitor_data)}\n")
+
+        print(f"Time: {monitor_time}\
+              \nTrigger rate: {monitor_data[18]}"
+        )
+        for idx in range(len(monitor_data)):
+            print(f"Ch{idx+1}", end="\t")
+        print("")
+        for value in monitor_data:
+            print(f"{value}", end="\t")
+        print("\n\n")
