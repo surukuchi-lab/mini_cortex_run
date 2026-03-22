@@ -1,4 +1,4 @@
-mdaq_v2.py
+*.log
 init.json
 data/*
 src/lib/__pycache__
