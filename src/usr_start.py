@@ -1,8 +1,11 @@
+#! /usr/local/bin/python3
+
 import serial
 import json
+import os
 
 # DO NOT CHANGE default 0x06
-pulse_width = 0x06
+pulse_width = 6 # 0x06
 
 event_enable = int(input("Event mode enable [0, 1]: "))
 mon_enable = int(input("Monitor mode enable [0, 1]: "))
@@ -37,7 +40,7 @@ except serial.serialutil.SerialException:
     for i in serial.tools.list_ports.comports():
         print(i)
     # have user manually enter the correct path
-    fpga_ser = input("Enter proper path or Ctl-C to exit: ")
+    fpga_ser = input("Enter full path or Ctl-C to exit: ")
 
 
 print("\nConfig passed.\
@@ -51,7 +54,10 @@ config = {
     "PULSE_WIDTH": pulse_width,
 }
 
+if os.name=='posix': os.system("touch init.json")
 with open("init.json", "w") as f:
     json.dump(config, f, indent=4)
 
 print("Done! Starting mini CoRTEx")
+
+os.system("./run.sh -i init.json")
