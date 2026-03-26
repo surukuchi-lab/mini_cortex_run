@@ -1,8 +1,9 @@
 #! /usr/local/bin/python3
 
+import subprocess as sb
 import serial
 import json
-import os
+# import os
 
 # DO NOT CHANGE default 0x06
 pulse_width = 6 # 0x06
@@ -54,10 +55,11 @@ config = {
     "PULSE_WIDTH": pulse_width,
 }
 
-if os.name=='posix': os.system("touch init.json")
+# Will overwrite your init.json if you haven't renamed it
+sb.call("touch init.json")
 with open("init.json", "w") as f:
     json.dump(config, f, indent=4)
 
 print("Done! Starting mini CoRTEx")
 
-os.system("./run.sh -i init.json")
+sb.call("./run.sh -i init.json")

@@ -1,4 +1,5 @@
-*.log
-init.json
 data/*
 src/lib/__pycache__
+altrun.sh
+init.json
+*.log

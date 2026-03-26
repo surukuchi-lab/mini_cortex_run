@@ -38,7 +38,7 @@ FPGA_controler.tx_setup()
 print("Setup sent to FPGA...")
 
 
-# Event mode body. data is save from the FPGA, currently 32 bits are returned,
+# Event mode body. Data is saved from the FPGA, currently 32 bits are returned,
 # im not sure why but thats how it is in mdaq_v2.py and mdaq_startup_v2.py. 
 # Should return pixel data from the FPGA which would be 27 bits for 3x3x3 
 # detector.
@@ -62,7 +62,8 @@ if EVENT_ENABLE == 1:
         print(f"{event_data:032b}")
 
 
-
+# Monitor mode body. Creates data file to save data for archiving. Continualy
+# querries the FPGA for monitor data. Saves and prints captured data
 if MONITOR_ENABLE == 1:
     os.makedirs("data/monitor/", exist_ok=True)
     monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
