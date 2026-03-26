@@ -22,7 +22,7 @@ def tx_setup() -> None:
 
     tx_array.append(PULSE_WIDTH)
     tx_array.append(0xFF)
-    tx_array.append(MONITOR_PERIOD)                 
+    tx_array.append(0x000000FF & MONITOR_PERIOD)                 
     tx_array.append((0x0000FF00 & MONITOR_PERIOD)>>8)
     tx_array.append((0x00FF0000 & MONITOR_PERIOD)>>16)  
     tx_array.append((0xFF000000 & MONITOR_PERIOD)>>24)   
@@ -34,11 +34,9 @@ def event_handler() -> int:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'event'. Returns the first data event that it recieves as an integer'''
 
     while True:
-        try:
-            data = fpga_ser.readline()
-            if( len(data)==8 ): break
-            else: time.sleep(0.005)
-        except KeyboardInterrupt: fpga_ser.close()
+        data = fpga_ser.readline()
+        if( len(data)==8 ): break
+        else: time.sleep(0.005)
 
     rx_array = array('B',[]*500)
 
@@ -64,11 +62,9 @@ def monitor_handler() -> list[bool]:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'monitor' event. Returns the first data event that it recieves as a list of bits'''
     
     while True:
-        try:
-            data = fpga_ser.readline()
-            if(len(data) == 23): break
-            else: time.sleep(0.005)
-        except KeyboardInterrupt: fpga_ser.close()
+        data = fpga_ser.readline()
+        if(len(data) == 23): break
+        else: time.sleep(0.005)
 
     rx_array = array('B',[]*500)
     mon_array = array('f',[]*50)
