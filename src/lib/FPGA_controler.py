@@ -34,9 +34,11 @@ def event_handler() -> int:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'event'. Returns the first data event that it recieves as an integer'''
 
     while True:
-        data = fpga_ser.readline()
-        if( len(data)==8 ): break
-        else: time.sleep(0.005)
+        try:
+            data = fpga_ser.readline()
+            if( len(data)==8 ): break
+            else: time.sleep(0.005)
+        except KeyboardInterrupt: fpga_ser.close()
 
     rx_array = array('B',[]*500)
 
@@ -62,9 +64,11 @@ def monitor_handler() -> list[bool]:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'monitor' event. Returns the first data event that it recieves as a list of bits'''
     
     while True:
-        data = fpga_ser.readline()
-        if(len(data) == 23): break
-        else: time.sleep(0.005)
+        try:
+            data = fpga_ser.readline()
+            if(len(data) == 23): break
+            else: time.sleep(0.005)
+        except KeyboardInterrupt: fpga_ser.close()
 
     rx_array = array('B',[]*500)
     mon_array = array('f',[]*50)
