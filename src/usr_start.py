@@ -11,7 +11,7 @@ pulse_width = 6 # 0x06
 event_enable = int(input("Event mode enable [0, 1]: "))
 mon_enable = int(input("Monitor mode enable [0, 1]: "))
 if mon_enable == 0: mon_period = 0
-else: mon_period = int(input("Enter monitoring period: "))
+else: mon_period = int(input("Enter monitoring period: ")) * 1000000
 
 fpga_usb_num = input("Enter USB PORT NO: ")  
 fpga_ser = f"/dev/ttyUSB{fpga_usb_num}"

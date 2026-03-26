@@ -26,7 +26,7 @@ with open(args["init"]) as f:
 # Set env variables
 EVENT_ENABLE = env_args["EVENT_ENABLE"]
 MONITOR_ENABLE = env_args["MONITOR_ENABLE"]
-TIME_STR = time.strftime("%Y-%m-%d_%H:%M")
+TIME_STR = time.strftime("%Y-%m-%d_%H-%M")
 
 print(f"Date_Time: {TIME_STR}\n")
 print(f"Loaded {args['init'].split('/')[-1]}")
@@ -53,7 +53,7 @@ if EVENT_ENABLE == 1:
     print("Starting event mode!\n")
     while True:
         event_data = FPGA_controler.event_handler()
-        event_time = time.strftime("%y-%m-%d_%H:%M:%S")
+        event_time = time.strftime("%y-%m-%d_%H-%M-%S")
         event_data_file.write(f"{event_time},{event_data:032b}\n")
 
         send_LED_cube_animate(f"{event_data:032b}")
@@ -72,11 +72,11 @@ if MONITOR_ENABLE == 1:
     print("Starting monitor mode!\n")
     while True:
         monitor_data = FPGA_controler.monitor_handler()
-        monitor_time = time.strftime("%y-%m-%d_%H:%M:%S")
+        monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
         monitor_data_file.write(f"{monitor_time},{str(monitor_data)}\n")
 
         print(f"Time: {monitor_time}\
-              \nTrigger rate: {monitor_data[18]}"
+            \nTrigger rate: {monitor_data[18]}"
         )
         for idx in range(len(monitor_data)):
             print(f"Ch{idx+1}", end="\t")
