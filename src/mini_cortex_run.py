@@ -76,11 +76,11 @@ if MONITOR_ENABLE == 1:
         monitor_data_file.write(f"{monitor_time},{str(monitor_data)}\n")
 
         print(f"Time: {monitor_time}\
-            \nTrigger rate: {monitor_data[18]}"
+            \nTrigger rate: {monitor_data[-1]}" # last hex word is the triger rate
         )
-        for idx in range(len(monitor_data)):
+        for idx in range(len(monitor_data)-1):
             print(f"Ch{idx+1}", end="\t")
         print("")
-        for value in monitor_data:
+        for value in monitor_data[:18]: # only the first 18 are scintilators
             print(f"{value}", end="\t")
         print("\n\n")

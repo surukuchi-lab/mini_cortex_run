@@ -11,9 +11,9 @@ pulse_width = 6 # 0x06
 event_enable = int(input("Event mode enable [0, 1]: "))
 mon_enable = int(input("Monitor mode enable [0, 1]: "))
 if mon_enable == 0: mon_period = 0
-else: mon_period = int(input("Enter monitoring period: ")) * 1000000
+else: mon_period = int(input("Enter monitoring period [sec]: ")) *1000000
 
-fpga_usb_num = input("Enter USB PORT NO: ")  
+fpga_usb_num = input("Enter USB PORT NO: ")
 fpga_ser = f"/dev/ttyUSB{fpga_usb_num}"
 
 
@@ -35,10 +35,10 @@ if event_enable not in (0, 1):
 # Test serial connection
 try: serial.Serial(fpga_ser, 115200, timeout=0)
 except serial.serialutil.SerialException:
-    import serial.tools.list_ports
+    from serial.tools.list_ports import comports
     print(f"Device not found on {fpga_ser}\
           \nPrinting available devices...\n")
-    for i in serial.tools.list_ports.comports():
+    for i in comports():
         print(i)
     # have user manually enter the correct path
     fpga_ser = input("Enter full path or Ctl-C to exit: ")
@@ -51,7 +51,7 @@ config = {
     "EVENT_ENABLE": event_enable,
     "MONITOR_ENABLE": mon_enable,
     "MONITOR_PERIOD": mon_period,
-    "FPGA_SER_PATH": fpga_ser, 
+    "FPGA_SER_PATH": fpga_ser,
     "PULSE_WIDTH": pulse_width,
 }
 
