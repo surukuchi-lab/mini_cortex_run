@@ -33,11 +33,10 @@ def tx_setup() -> None:
 def event_handler() -> int:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'event'. Returns the first data event that it recieves as an integer'''
 
-    # while True:
-    #     data = fpga_ser.readline()
-    #     if( len(data)==8 ): break
-    #     else: time.sleep(0.005)
-    data = fpga_ser.read_until(size=8)
+    while True:
+        data = fpga_ser.readline()
+        if( len(data)==8 ): break
+        else: time.sleep(0.005)
 
     rx_array = array('B',[]*500)
 
@@ -62,11 +61,10 @@ def event_handler() -> int:
 def monitor_handler() -> int:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'monitor' event. Returns the first data event that it recieves as a list of bits'''
     
-    # while True:
-    #     data = fpga_ser.readline()
-    #     if( len(data)==23 ): break
-    #     else: time.sleep(0.005)
-    data = fpga_ser.read_until(size=23)
+    while True:
+        data = fpga_ser.readline()
+        if( len(data)==23 ): break
+        else: time.sleep(0.005)
 
     rx_array = array('B',[]*500)
     mon_array = array('f',[]*50)
