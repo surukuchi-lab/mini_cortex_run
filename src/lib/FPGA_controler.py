@@ -59,7 +59,7 @@ def event_handler() -> int:
             return 0
     
 
-def monitor_handler() -> list[int]:
+def monitor_handler() -> int:
     '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'monitor' event. Returns the first data event that it recieves as a list of bits'''
     
     # while True:
