@@ -75,7 +75,7 @@ if MONITOR_ENABLE == 1:
     while True:
         monitor_data = FPGA_controler.monitor_handler()
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
-        monitor_data_file.write(f"{monitor_time},{monitor_data[:18].tolist},{monitor_data[-1].tolist}\n")
+        monitor_data_file.write(f"{monitor_time},{monitor_data[:18].tolist()},{monitor_data[-1]}\n")
 
         print(f"Time: {monitor_time}\
             \nTrigger rate: {monitor_data[-1]}" # last hex word is the triger rate
