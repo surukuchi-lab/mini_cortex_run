@@ -2,7 +2,7 @@ from array import array
 import serial
 import time
 
-def init(env_args):
+def init(env_args) -> None:
     global EVENT_ENABLE, MONITOR_ENABLE, MONITOR_PERIOD, FPGA_SER_PATH, PULSE_WIDTH, fpga_ser
     EVENT_ENABLE = env_args['EVENT_ENABLE']
     MONITOR_ENABLE = env_args['MONITOR_ENABLE']

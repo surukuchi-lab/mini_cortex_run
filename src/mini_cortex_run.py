@@ -63,17 +63,19 @@ if EVENT_ENABLE == 1:
 
 
 # Monitor mode body. Creates data file to save data for archiving. Continualy
-# querries the FPGA for monitor data. Saves and prints captured data
+# querries the FPGA for monitor data. Saves and prints captured data.
+# Monitor data is returned from monitor_handler() as a list of 19 values, first
+# 18 values are the individual channels, the last value is trigger rate
 if MONITOR_ENABLE == 1:
     os.makedirs("data/monitor/", exist_ok=True)
     monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
-    monitor_data_file.write("Time,Data\n")
+    monitor_data_file.write("Time,Data,Trig_rate\n")
 
     print("Starting monitor mode!\n")
     while True:
         monitor_data = FPGA_controler.monitor_handler()
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
-        monitor_data_file.write(f"{monitor_time},{str(monitor_data)}\n")
+        monitor_data_file.write(f"{monitor_time},{monitor_data[:18].tolist},{monitor_data[-1].tolist}\n")
 
         print(f"Time: {monitor_time}\
             \nTrigger rate: {monitor_data[-1]}" # last hex word is the triger rate
