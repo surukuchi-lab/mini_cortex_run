@@ -1,5 +1,6 @@
 from lib import FPGA_controler
 from lib.LED_cube import send_LED_cube_animate
+from lib.bmp180 import BMP180
 import json
 import argparse
 import time
@@ -32,6 +33,14 @@ print(f"Date_Time: {TIME_STR}\n")
 print(f"Loaded {args['init'].split('/')[-1]}")
 print(f"{env_args}\n")
 
+#BMP180 sensor
+try:
+    bmp = BMP180(oss=3)
+    print("BMP180 initialised.\n")
+except Exception as e:
+    bmp = None
+    print(f"WARNING: BMP180 not available: environmental data will be omitted. ({e})\n")
+
 # Pass env varibales to the FPGA_controler script and send setup to the FPGA
 FPGA_controler.init(env_args)
 FPGA_controler.tx_setup()
@@ -48,18 +57,39 @@ print("Setup sent to FPGA...")
 if EVENT_ENABLE == 1:
     os.makedirs("data/event/", exist_ok=True)
     event_data_file = open(f"data/event/{TIME_STR}.csv", "w")
-    event_data_file.write("Time,Data\n")
+    event_data_file.write("Time,Data,Temp_C,Pressure_hPa,Altitude_m\n")
 
     print("Starting event mode!\n")
     while True:
         event_data = FPGA_controler.event_handler()
+
+        if event_data is None:
+            print(f"WARNING: No event data at {event_time}, skipping.")
+            continue
+
         event_time = time.strftime("%y-%m-%d_%H-%M-%S")
-        event_data_file.write(f"{event_time},{event_data:032b}\n")
+        env = bmp.safe_read() if bmp else {k: None for k in ('temperature_c','pressure_hpa','altitude_m')}
+ 
+        event_data_file.write(
+            f"{event_time},"
+            f"{event_data:032b},"
+            f"{env['temperature_c']},"
+            f"{env['pressure_hpa']},"
+            f"{env['altitude_m']}\n"
+        )
+
+        event_data_file.flush()
 
         send_LED_cube_animate(f"{event_data:032b}")
 
         print ("Timestamp and Event",event_time.split("_")[-1])   
         print(f"{event_data:032b}")
+        if env['temperature_c'] is not None:
+            print(
+                f"Temp: {env['temperature_c']} °C  "
+                f"| Pressure: {env['pressure_hpa']} hPa  "
+                f"| Altitude: {env['altitude_m']} m"
+            )
 
 
 # Monitor mode body. Creates data file to save data for archiving. Continualy
@@ -69,14 +99,31 @@ if EVENT_ENABLE == 1:
 if MONITOR_ENABLE == 1:
     os.makedirs("data/monitor/", exist_ok=True)
     monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
-    monitor_data_file.write("Time,Data,Trig_rate\n")
+    channels = [f"ch{i}" for i in range(18)]
+    header   = ["Time"] + channels + ["Trig_rate", "Temp_C", "Pressure_hPa", "Altitude_m"]
+    monitor_data_file.write(",".join(header) + "\n")
 
     print("Starting monitor mode!\n")
     while True:
         monitor_data = FPGA_controler.monitor_handler()
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
-        monitor_data_file.write(f"{monitor_time},{monitor_data[:18].tolist()},{monitor_data[-1]}\n")
-
+        env = bmp.safe_read() if bmp else {k: None for k in ('temperature_c','pressure_hpa','altitude_m')}
+ 
+        monitor_data_file.write(
+            f"{monitor_time},"
+            f"{','.join(str(int(v)) for v in monitor_data[:18])},"
+            f"{monitor_data[-1]},"
+            f"{env['temperature_c']},"
+            f"{env['pressure_hpa']},"
+            f"{env['altitude_m']}\n"
+        )
+        monitor_data_file.flush()
+        if env['temperature_c'] is not None:
+            print(
+                f"Temp: {env['temperature_c']} °C  "
+                f"| Pressure: {env['pressure_hpa']} hPa  "
+                f"| Altitude: {env['altitude_m']} m"
+            )
         print(f"Time: {monitor_time}\
             \nTrigger rate: {monitor_data[-1]}" # last hex word is the triger rate
         )
