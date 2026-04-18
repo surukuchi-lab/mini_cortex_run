@@ -29,53 +29,47 @@ def tx_setup() -> None:
 
     fpga_ser.write(bytes(tx_array))
 
-
-def event_handler() -> int:
-    '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'event'. Returns the first data event that it recieves as an integer'''
-
+def data_handler():
     while True:
         data = fpga_ser.readline()
-        if( len(data)==8 ): break
-        else: time.sleep(0.005)
+        if len(data) == 8:
+            return event_handler(data), True
+        elif len(data) == 23:
+            return monitor_handler(data), False
+        else:
+            time.sleep(0.005), None
 
-    rx_array = array('B',[]*500)
 
+def event_handler(data) -> int:
+    rx_array = array('B', []*500)
     for byte in data:
         rx_array.append(byte)
 
-    # bitwise opperators '<<', '&', and '|' https://www.geeksforgeeks.org/python/python-bitwise-operators/
-    # first hex word is same for both, trailer hex differs
-    header = ((rx_array[1] & 0x00ff) << 8) | (rx_array[0] & 0x00ff)
+    header      = ((rx_array[1] & 0x00ff) << 8) | (rx_array[0] & 0x00ff)
     event_tailer = ((rx_array[7] & 0x00ff) << 8) | (rx_array[6] & 0x00ff)
 
-    if(header == 0xa5a5 and event_tailer == 0xd5d5):
-        eve_word = ((rx_array[5] & 0x000000ff) << 24) | ((rx_array[4] & 0x000000ff) << 16) | ((rx_array[3] & 0x000000ff) << 8) | rx_array[2]
-        
-        if type(eve_word) == int: 
+    if header == 0xa5a5 and event_tailer == 0xd5d5:
+        eve_word = ((rx_array[5] & 0x000000ff) << 24) | ((rx_array[4] & 0x000000ff) << 16) \
+                 | ((rx_array[3] & 0x000000ff) <<  8) |  (rx_array[2] & 0x000000ff)
+
+        if type(eve_word) == int:
             return eve_word
-        else: 
+        else:
             print(f"\033[91mError while processing bit string. Expected int type, got {type(eve_word)}\033[00m")
             return 0
-    
 
-def monitor_handler() -> int:
-    '''Querries the FPGA every 1/200 of a second for data and checks if that data meets requirements for an 'monitor' event. Returns the first data event that it recieves as a list of bits'''
-    
-    while True:
-        data = fpga_ser.readline()
-        if( len(data)==23 ): break
-        else: time.sleep(0.005)
 
-    rx_array = array('B',[]*500)
-    mon_array = array('f',[]*50)
+def monitor_handler(data):
+    rx_array = array('B', []*500)
+    mon_array = array('f', []*50)
 
     for byte in data:
         rx_array.append(byte)
-    
-    header = ((rx_array[1] & 0x00ff) << 8) | (rx_array[0] & 0x00ff)
+
+    header          = ((rx_array[1]  & 0x00ff) << 8) | (rx_array[0]  & 0x00ff)
     monitor_trailer = ((rx_array[22] & 0x00ff) << 8) | (rx_array[21] & 0x00ff)
 
-    if(header == 0xaaaa and monitor_trailer == 0xd6d6):
-        for i in range(2,21):
+    if header == 0xaaaa and monitor_trailer == 0xd6d6:
+        for i in range(2, 21):
             mon_array.append(rx_array[i])
         return mon_array
