@@ -1,7 +1,7 @@
 {
     "EVENT_ENABLE": 1,
-    "MONITOR_ENABLE": 0,
-    "MONITOR_PERIOD": 0,
+    "MONITOR_ENABLE": 1,
+    "MONITOR_PERIOD": 10000000,
     "FPGA_SER_PATH": "/dev/ttyUSB0",
     "PULSE_WIDTH": 6
 }
