@@ -46,24 +46,24 @@ FPGA_controler.init(env_args)
 FPGA_controler.tx_setup()
 print("Setup sent to FPGA...")
 
+#Setting up data files
+#Event Data
+os.makedirs("data/event/", exist_ok=True)
+event_data_file = open(f"data/event/{TIME_STR}.csv", "w")
+event_data_file.write("Time,Data,Temp_C,Pressure_hPa\n")
+#Monitor Data
+os.makedirs("data/monitor/", exist_ok=True)
+monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
+channels = [f"ch{i}" for i in range(18)]
+header   = ["Time"] + channels + ["Trig_rate", "Temp_C", "Pressure_hPa"]
+monitor_data_file.write(",".join(header) + "\n")
 
-# Event mode body. Data is saved from the FPGA, currently 32 bits are returned,
-# im not sure why but thats how it is in mdaq_v2.py and mdaq_startup_v2.py. 
-# Should return pixel data from the FPGA which would be 27 bits for 3x3x3 
-# detector.
-#
-# Creates the data file to save data for archiving. Continualy querries the
-# FPGA for event data. Saves and displays captured data
-if EVENT_ENABLE == 1:
-    os.makedirs("data/event/", exist_ok=True)
-    event_data_file = open(f"data/event/{TIME_STR}.csv", "w")
-    event_data_file.write("Time,Data,Temp_C,Pressure_hPa,Altitude_m\n")
 
-    print("Starting event mode!\n")
-    while True:
-        event_data = FPGA_controler.event_handler()
-
-        if event_data is None:
+#Core loop to get both event and monitor data
+while True:
+    data, isEventData = FPGA_controler.data_handler()
+    if isEventData:
+        if data is None:
             print(f"WARNING: No event data at {event_time}, skipping.")
             continue
 
@@ -72,64 +72,49 @@ if EVENT_ENABLE == 1:
  
         event_data_file.write(
             f"{event_time},"
-            f"{event_data:032b},"
+            f"{data:032b},"
             f"{env['temperature_c']},"
-            f"{env['pressure_hpa']},"
-            f"{env['altitude_m']}\n"
+            f"{env['pressure_hpa']}\n"
         )
 
         event_data_file.flush()
 
-        send_LED_cube_animate(f"{event_data:032b}")
+        send_LED_cube_animate(f"{data:032b}")
 
         print ("Timestamp and Event",event_time.split("_")[-1])   
-        print(f"{event_data:032b}")
+        print(f"{data:032b}")
         if env['temperature_c'] is not None:
             print(
                 f"Temp: {env['temperature_c']} °C  "
                 f"| Pressure: {env['pressure_hpa']} hPa  "
-                f"| Altitude: {env['altitude_m']} m"
             )
 
-
-# Monitor mode body. Creates data file to save data for archiving. Continualy
-# querries the FPGA for monitor data. Saves and prints captured data.
-# Monitor data is returned from monitor_handler() as a list of 19 values, first
-# 18 values are the individual channels, the last value is trigger rate
-if MONITOR_ENABLE == 1:
-    os.makedirs("data/monitor/", exist_ok=True)
-    monitor_data_file = open(f"data/monitor/{TIME_STR}.csv", "w")
-    channels = [f"ch{i}" for i in range(18)]
-    header   = ["Time"] + channels + ["Trig_rate", "Temp_C", "Pressure_hPa", "Altitude_m"]
-    monitor_data_file.write(",".join(header) + "\n")
-
-    print("Starting monitor mode!\n")
-    while True:
-        monitor_data = FPGA_controler.monitor_handler()
+    elif not isEventData:
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
         env = bmp.safe_read() if bmp else {k: None for k in ('temperature_c','pressure_hpa','altitude_m')}
  
         monitor_data_file.write(
             f"{monitor_time},"
-            f"{','.join(str(int(v)) for v in monitor_data[:18])},"
-            f"{monitor_data[-1]},"
+            f"{','.join(str(int(v)) for v in data[:18])},"
+            f"{data[-1]},"
             f"{env['temperature_c']},"
-            f"{env['pressure_hpa']},"
-            f"{env['altitude_m']}\n"
+            f"{env['pressure_hpa']}\n"
         )
         monitor_data_file.flush()
         if env['temperature_c'] is not None:
             print(
                 f"Temp: {env['temperature_c']} °C  "
                 f"| Pressure: {env['pressure_hpa']} hPa  "
-                f"| Altitude: {env['altitude_m']} m"
             )
         print(f"Time: {monitor_time}\
-            \nTrigger rate: {monitor_data[-1]}" # last hex word is the triger rate
+            \nTrigger rate: {data[-1]}" # last hex word is the triger rate
         )
-        for idx in range(len(monitor_data)-1):
+        for idx in range(len(data)-1):
             print(f"Ch{idx+1}", end="\t")
         print("")
-        for value in monitor_data[:18]: # only the first 18 are scintilators
+        for value in data[:18]: # only the first 18 are scintilators
             print(f"{value}", end="\t")
         print("\n\n")
+
+    else:
+        print("Not Monitoring or Event Data?")
