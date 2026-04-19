@@ -92,6 +92,10 @@ while True:
     elif not isEventData:
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
         env = bmp.safe_read() if bmp else {k: None for k in ('temperature_c','pressure_hpa','altitude_m')}
+
+        if data is None:
+            print(f"WARNING: No monitor data at {monitor_time}, skipping.")
+            continue
  
         monitor_data_file.write(
             f"{monitor_time},"
