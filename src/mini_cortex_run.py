@@ -1,6 +1,7 @@
 from lib import FPGA_controler
 from lib.LED_cube import send_LED_cube_animate
 from lib.bmp180 import BMP180
+from lib import display
 import json
 import argparse
 import time
@@ -46,6 +47,8 @@ FPGA_controler.init(env_args)
 FPGA_controler.tx_setup()
 print("Setup sent to FPGA...")
 
+display.init()
+
 #Setting up data files
 #Event Data
 os.makedirs("data/event/", exist_ok=True)
@@ -89,6 +92,8 @@ while True:
                 f"| Pressure: {env['pressure_hpa']} hPa  "
             )
 
+        display.update_event(data, event_time, env['temperature_c'], env['pressure_hpa'])
+
     elif not isEventData:
         monitor_time = time.strftime("%y-%m-%d_%H-%M-%S")
         env = bmp.safe_read() if bmp else {k: None for k in ('temperature_c','pressure_hpa','altitude_m')}
@@ -96,7 +101,7 @@ while True:
         if data is None:
             print(f"WARNING: No monitor data at {monitor_time}, skipping.")
             continue
- 
+
         monitor_data_file.write(
             f"{monitor_time},"
             f"{','.join(str(int(v)) for v in data[:18])},"
@@ -120,5 +125,6 @@ while True:
             print(f"{value}", end="\t")
         print("\n\n")
 
+        display.update_monitor(data[:18], data[-1], env['temperature_c'], env['pressure_hpa'])
     else:
         print("Not Monitoring or Event Data?")
